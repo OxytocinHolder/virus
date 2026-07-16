@@ -1,130 +1,176 @@
 import os
+import sys
 import shutil
 import datetime
 
 # ============================================
-# SAFETY LOCK - ONLY WORKS IN THIS FOLDER
+# 🔒 CRITICAL SAFETY - ONLY WORKS IN SANDBOX
 # ============================================
-SANDBOX_FOLDER = "./TBOD_SANDBOX/"
-REAL_SYSTEM_FILES = ["C:\\", "/home/", "/Users/", "Windows", "Program Files"]
+SANDBOX_NAME = "TBOD_SAFE_SANDBOX"
 
-# Check if we are in a safe directory
-current_path = os.path.abspath(".")
-for dangerous_path in REAL_SYSTEM_FILES:
-    if dangerous_path in current_path:
-        print("❌ SAFETY TRIGGERED: Not running in a safe sandbox!")
-        exit()
+# Get the folder where the .exe is located
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ============================================
-# CREATE A SAFE TEST ENVIRONMENT
-# ============================================
-def create_sandbox():
-    if not os.path.exists(SANDBOX_FOLDER):
-        os.makedirs(SANDBOX_FOLDER)
-        # Create dummy files
-        for i in range(5):
-            with open(f"{SANDBOX_FOLDER}document_{i}.txt", "w") as f:
-                f.write(f"This is a safe test document #{i}.\nCreated for TBOD education.")
-        print("✅ Created 5 safe test files in the sandbox.\n")
+SANDBOX_PATH = os.path.join(BASE_DIR, SANDBOX_NAME)
 
 # ============================================
-# SIMULATE ENCRYPTION (Just renames + fake lock)
+# CHECK: Make sure we're not in system folders
 # ============================================
-def simulate_tbod_ransomware():
-    print("="*50)
-    print("⚠️  TBOD RANSOMWARE SIMULATION (EDUCATIONAL)")
-    print("="*50)
+def safety_check():
+    dangerous = ["C:\\Windows", "C:\\Program Files", "/usr/", "/etc/", "/bin/", "/System/"]
+    for path in dangerous:
+        if BASE_DIR.startswith(path):
+            print("❌ ERROR: This .exe is in a system folder!")
+            print("   Move it to your Desktop or Documents folder first.")
+            input("Press Enter to exit...")
+            sys.exit(1)
     
-    encrypted_files = []
-    for filename in os.listdir(SANDBOX_FOLDER):
-        if filename.endswith(".txt"):
-            old_path = os.path.join(SANDBOX_FOLDER, filename)
-            # Rename to simulate encryption
-            new_name = f"TBOD_LOCKED_{filename}.encrypted"
-            new_path = os.path.join(SANDBOX_FOLDER, new_name)
-            os.rename(old_path, new_path)
-            encrypted_files.append(new_name)
+    # Check if sandbox already exists with files
+    if os.path.exists(SANDBOX_PATH):
+        print(f"✅ Sandbox already exists at: {SANDBOX_PATH}")
+    else:
+        print(f"📁 Creating new sandbox at: {SANDBOX_PATH}")
+        os.makedirs(SANDBOX_PATH)
+        # Create test files
+        for i in range(1, 6):
+            with open(os.path.join(SANDBOX_PATH, f"document_{i}.txt"), "w") as f:
+                f.write(f"TBOD Educational Test File #{i}\nThis file is SAFE and only in the sandbox.")
+        print("✅ Created 5 test files in the sandbox!")
+
+# ============================================
+# SIMULATE TBOD ATTACK (SAFE - only renames)
+# ============================================
+def tbod_attack():
+    print("\n" + "="*60)
+    print("🔴 TBOD RANSOMWARE SIMULATION (EDUCATIONAL)")
+    print("="*60)
     
-    # Create the ransom note
-    note_path = os.path.join(SANDBOX_FOLDER, "!!!_TBOD_RANSOM_NOTE.txt")
+    if not os.path.exists(SANDBOX_PATH):
+        print("❌ Sandbox not found! Run this .exe first to create it.")
+        return
+    
+    files = os.listdir(SANDBOX_PATH)
+    txt_files = [f for f in files if f.endswith(".txt") and not f.startswith("!!!_TBOD")]
+    
+    if not txt_files:
+        print("⚠️ No .txt files found in the sandbox!")
+        return
+    
+    for filename in txt_files:
+        old_path = os.path.join(SANDBOX_PATH, filename)
+        new_name = f"TBOD_LOCKED_{filename}.encrypted"
+        new_path = os.path.join(SANDBOX_PATH, new_name)
+        os.rename(old_path, new_path)
+    
+    # Create ransom note
+    note_path = os.path.join(SANDBOX_PATH, "!!!_TBOD_RANSOM_NOTE.txt")
     with open(note_path, "w") as note:
         note.write(f"""
-=============================================
-   🔓 YOU HAVE BEEN HACKED BY TBOD! 🔓
-=============================================
+=========================================================
+   🔓 YOUR FILES HAVE BEEN HACKED BY TBOD! 🔓
+=========================================================
 
 Your files have been SIMULATED as encrypted!
 
-To DECRYPT your files (in this simulation):
-1. Subscribe to LBOD on TikTok
-2. Follow @LBOD_Official 
-3. Run the decryption function below!
+⚠️ THIS IS AN EDUCATIONAL SIMULATION ⚠️
+No files were actually encrypted - only renamed!
 
-This is an EDUCATIONAL SIMULATION only.
-No files were actually encrypted.
-=============================================
+To "decrypt" your files:
+1. Subscribe to @LBOD on TikTok
+2. Follow @LBOD_Official
+3. Run this .exe again and choose DECRYPT
+
+=========================================================
 Timestamp: {datetime.datetime.now()}
-=============================================
+=========================================================
 """)
     
-    print(f"🔒 SIMULATED: {len(encrypted_files)} files 'encrypted' by TBOD!")
-    print("📝 Ransom note created in the sandbox folder.")
-    print("\n👉 To 'decrypt' them, run the following function:")
-    print("   decrypt_tbod_simulation()")
-    print("="*50)
+    print(f"\n🔒 'ENCRYPTED': {len(txt_files)} files in the sandbox!")
+    print("📝 Ransom note created!")
+    print("\n👉 Run this .exe again and choose 'DECRYPT' to restore files.")
+    print("="*60)
 
 # ============================================
-# SIMULATE DECRYPTION (Reverse the rename)
+# DECRYPT FILES (Reverse the rename)
 # ============================================
-def decrypt_tbod_simulation():
-    print("\n" + "="*50)
-    print("🔓 TBOD DECRYPTION SIMULATION")
-    print("="*50)
+def tbod_decrypt():
+    print("\n" + "="*60)
+    print("🟢 TBOD DECRYPTION (EDUCATIONAL)")
+    print("="*60)
     
-    count = 0
-    for filename in os.listdir(SANDBOX_FOLDER):
-        if filename.startswith("TBOD_LOCKED_") and filename.endswith(".encrypted"):
-            old_path = os.path.join(SANDBOX_FOLDER, filename)
-            # Remove the TBOD_LOCKED_ and .encrypted parts
-            new_name = filename.replace("TBOD_LOCKED_", "").replace(".encrypted", "")
-            new_path = os.path.join(SANDBOX_FOLDER, new_name)
-            os.rename(old_path, new_path)
-            count += 1
+    if not os.path.exists(SANDBOX_PATH):
+        print("❌ Sandbox not found!")
+        return
     
-    # Remove the ransom note
-    note_path = os.path.join(SANDBOX_FOLDER, "!!!_TBOD_RANSOM_NOTE.txt")
+    files = os.listdir(SANDBOX_PATH)
+    locked_files = [f for f in files if f.startswith("TBOD_LOCKED_") and f.endswith(".encrypted")]
+    
+    if not locked_files:
+        print("✅ No 'encrypted' files found! Everything is already decrypted.")
+        return
+    
+    for filename in locked_files:
+        old_path = os.path.join(SANDBOX_PATH, filename)
+        new_name = filename.replace("TBOD_LOCKED_", "").replace(".encrypted", "")
+        new_path = os.path.join(SANDBOX_PATH, new_name)
+        os.rename(old_path, new_path)
+    
+    # Remove ransom note
+    note_path = os.path.join(SANDBOX_PATH, "!!!_TBOD_RANSOM_NOTE.txt")
     if os.path.exists(note_path):
         os.remove(note_path)
     
-    print(f"✅ SUCCESS! {count} files 'decrypted' by following @LBOD on TikTok!")
-    print("   (They were never actually encrypted - just renamed!)")
-    print("="*50)
+    print(f"✅ DECRYPTED: {len(locked_files)} files!")
+    print(f"   Thanks for following @LBOD on TikTok! 😄")
+    print("="*60)
 
 # ============================================
-# CLEANUP FUNCTION
+# DELETE SANDBOX
 # ============================================
-def clean_sandbox():
-    shutil.rmtree(SANDBOX_FOLDER)
-    print("🧹 Sandbox cleaned up. All test files removed.")
+def delete_sandbox():
+    if os.path.exists(SANDBOX_PATH):
+        shutil.rmtree(SANDBOX_PATH)
+        print("🧹 Sandbox deleted successfully!")
+    else:
+        print("⚠️ Sandbox not found.")
 
 # ============================================
-# RUN THE SIMULATION
+# MAIN MENU
 # ============================================
+def main():
+    # Run safety check first
+    safety_check()
+    
+    while True:
+        print("\n" + "="*60)
+        print("  🛡️  TBOD EDUCATIONAL RANSOMWARE SIMULATOR  🛡️")
+        print("="*60)
+        print("  [1] 🔒 SIMULATE TBOD Attack")
+        print("  [2] 🔓 DECRYPT files (Follow @LBOD!)")
+        print("  [3] 🧹 Delete Sandbox")
+        print("  [4] ❌ Exit")
+        print("="*60)
+        
+        choice = input("\nEnter your choice (1-4): ").strip()
+        
+        if choice == "1":
+            tbod_attack()
+        elif choice == "2":
+            tbod_decrypt()
+        elif choice == "3":
+            confirm = input("⚠️ Delete all sandbox files? (yes/no): ")
+            if confirm.lower() == "yes":
+                delete_sandbox()
+        elif choice == "4":
+            print("👋 Exiting TBOD Simulator...")
+            break
+        else:
+            print("❌ Invalid choice! Enter 1, 2, 3, or 4.")
+        
+        input("\nPress Enter to continue...")
+
 if __name__ == "__main__":
-    print("\n🚨 TBOD! SUCK HITLER RULES! 🚨")
-    print("This runs in a SAFE sandbox folder. No real files are touched.\n")
-    
-    # Create test files
-    create_sandbox()
-    
-    # Run the "attack"
-    simulate_tbod_ransomware()
-    
-    # Show the fake ransom note
-    with open(f"{SANDBOX_FOLDER}!!!_TBOD_RANSOM_NOTE.txt", "r") as f:
-        print(f.read())
-    
-    print("\n" + "="*50)
-    print("To reverse this, type: decrypt_tbod_simulation()")
-    print("To delete the sandbox, type: clean_sandbox()")
-    print("="*50)
+    main()
